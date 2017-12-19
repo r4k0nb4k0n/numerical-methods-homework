@@ -63,10 +63,7 @@ function [x, y] = BVPShootSecant(fOFx, gOFx, hOfx, a, b, n, Ya, Yb, WL, WH)
       y = yi;
       break
     end
-    x0 = x1; x1 = xi;
-    y0 = y1; y1 = yi;
-    [x0, w0, y0] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Ya);
-    [x1, w1, y1] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Yb);
+    [x0, w0, y0] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, xi(n), yi(n));
   end
   if i>n
     fprintf('Solution was not obtained in %i iterations.\n', n);
