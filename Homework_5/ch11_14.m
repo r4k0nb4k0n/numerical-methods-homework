@@ -21,10 +21,10 @@ function [x, t, y] = Sys2ODEsRK4(ODE1, ODE2, a, b, h, x1, y1)
     tm = t(i) + h/2;
     Kx1 = ODE1(t(i), x(i), y(i));
     Ky1 = ODE2(t(i), x(i), y(i));
-    Kx2 = ODE1(tm, x(i) + Kx1*h/2, y(i) + Ky1*h/2;
-    Ky2 = ODE2(tm, x(i) + Kx1*h/2, y(i) + Ky1*h/2;
-    Kx3 = ODE1(tm, x(i) + Kx2*h/2, y(i) + Ky2*h/2;
-    Ky3 = ODE2(tm, x(i) + Kx2*h/2, y(i) + Ky2*h/2;
+    Kx2 = ODE1(tm, x(i) + Kx1*h/2, y(i) + Ky1*h/2);
+    Ky2 = ODE2(tm, x(i) + Kx1*h/2, y(i) + Ky1*h/2);
+    Kx3 = ODE1(tm, x(i) + Kx2*h/2, y(i) + Ky2*h/2);
+    Ky3 = ODE2(tm, x(i) + Kx2*h/2, y(i) + Ky2*h/2);
     Kx4 = ODE1(t(i + 1), x(i) + Kx3*h, y(i) + Ky3*h);
     Ky4 = ODE2(t(i + 1), x(i) + Kx3*h, y(i) + Ky3*h);
     x(i+1) = x(i) + (Kx1 + 2*Kx2 + 2*Kx3 + Kx4)*h/6;
@@ -56,16 +56,23 @@ function [x, y] = BVPShootSecant(fOFx, gOFx, hOfx, a, b, n, Ya, Yb, WL, WH)
   [x0, w0, y0] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Ya);
   [x1, w1, y1] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Yb);
   for i = 1:n % Do n times.
-    xi = x1 - (x1 - x0)*y1/(y1 - y0) % secant formula
+    xi = x1 - (x1 - x0).*y1/(y1 - y0) % secant formula
+    yi = y1 - (y1 - y0).*x1/(x1 - x0) % secant formula
     if abs((xi - x1)/x1)  < tol
       x = xi;
+      y = yi;
       break
     end
-    x0 = x1;
-    x1 = xi;
+    x0 = x1; x1 = xi;
+    y0 = y1; y1 = yi;
+    [x0, w0, y0] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Ya);
+    [x1, w1, y1] = Sys2ODEsRK4(@DwDx, @DyDx, a, b, h, 0, Yb);
   end
-  if i==n
-    fprintf('Solution was not obtained in %i iterations.\n', n)
+  if i>n
+    fprintf('Solution was not obtained in %i iterations.\n', n);
+  else
+    plot(x, y)
+    xlabel('x'); ylabel('y');
   end
 end
 
